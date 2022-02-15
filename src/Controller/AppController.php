@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /**
  * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
@@ -12,6 +14,7 @@
  * @since     0.2.9
  * @license   https://opensource.org/licenses/mit-license.php MIT License
  */
+
 namespace App\Controller;
 
 use Cake\Controller\Controller;
@@ -37,34 +40,35 @@ class AppController extends Controller
      *
      * @return void
      */
-    public function initialize()
+    public function initialize(): void
     {
         parent::initialize();
-        
+
         $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
-        
-        $this->loadComponent('Auth', [
-            'storage' => 'Memory',
-            'authenticate' => [
-                'Form',
-                'ADmad/JwtAuth.Jwt' => [
-                    'parameter' => 'token',
-                    'userModel' => 'Users',
-                    'fields' => [
-                        'username' => 'id'
-                    ],
-                    'queryDatasource' => true
-                ]
-            ],
-            'loginAction' => [
-                'controller' => 'Users',
-                'action' => 'login'
-            ],
-            'unauthorizedRedirect' => false,
-            'checkAuthIn' => 'Controller.initialize'
-        ]);
-        $this->Auth->allow(['home', 'display']);
+
+        // $this->loadComponent('Auth', [
+        //     'storage' => 'Memory',
+        //     'authenticate' => [
+        //         'Form',
+        //         'ADmad/JwtAuth.Jwt' => [
+        //             'parameter' => 'token',
+        //             'userModel' => 'Users',
+        //             'fields' => [
+        //                 'username' => 'id'
+        //             ],
+        //             'queryDatasource' => true
+        //         ]
+        //     ],
+        //     'loginAction' => [
+        //         'controller' => 'Users',
+        //         'action' => 'login'
+        //     ],
+        //     'unauthorizedRedirect' => false,
+        //     'checkAuthIn' => 'Controller.initialize'
+        // ]);
+        // $this->Auth->allow(['home', 'display']);
+        $this->loadComponent('Authentication.Authentication');
 
         /*
          * Enable the following components for recommended CakePHP security settings.
@@ -72,23 +76,5 @@ class AppController extends Controller
          */
         //$this->loadComponent('Security');
         //$this->loadComponent('Csrf');
-    }
-
-    /**
-     * Before render callback.
-     *
-     * @param \Cake\Event\Event $event The beforeRender event.
-     * @return \Cake\Http\Response|null|void
-     */
-    public function beforeRender(Event $event)
-    {
-        // Note: These defaults are just to get started quickly with development
-        // and should not be used in production. You should instead set "_serialize"
-        // in each action as required.
-        if (!array_key_exists('_serialize', $this->viewVars) &&
-            in_array($this->response->type(), ['application/json', 'application/xml'])
-        ) {
-            $this->set('_serialize', true);
-        }
     }
 }

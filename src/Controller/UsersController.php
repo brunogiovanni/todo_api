@@ -1,31 +1,30 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Controller\AppController;
-use Cake\Utility\Security;
+use Cake\Http\Response;
+use Cake\Http\Cookie\Cookie;
 use Firebase\JWT\JWT;
-use Cake\Network\Exception\UnauthorizedException;
 
 /**
  * Users Controller
  *
  * @property \App\Model\Table\UsersTable $Users
+ * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
  *
  * @method \App\Model\Entity\User[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
 class UsersController extends AppController
 {
-    
-    public function initialize()
+
+    public function initialize(): void
     {
         parent::initialize();
-        
-        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION']);
-            $this->decoded = JWT::decode($token, Security::getSalt(), ['HS256']);
-        }
-        
-        $this->Auth->allow(['add', 'login']);
+
+        $this->Authentication->allowUnauthenticated(['add', 'login']);
     }
 
     /**
@@ -71,7 +70,7 @@ class UsersController extends AppController
             if ($this->Users->save($user)) {
                 $message = 'success';
             } else {
-                $message = $user->errors();
+                $message = $user->getErrors();
             }
             $this->set(compact('message'));
             $this->set('_serialize', 'message');
@@ -98,7 +97,7 @@ class UsersController extends AppController
             if ($this->Users->save($user)) {
                 $message = 'success';
             } else {
-                $message = $user->errors();
+                $message = $user->getErrors();
             }
             $this->set(compact('message'));
             $this->set('_serialize', 'message');
@@ -122,37 +121,52 @@ class UsersController extends AppController
         if ($this->Users->delete($user)) {
             $message = 'success';
         } else {
-            $message = $user->errors();
+            $message = $user->getErrors();
         }
         $this->set(compact('message'));
         $this->set('_serialize', 'message');
     }
-    
+
     public function login()
     {
-        $user = $this->Auth->identify();
-        if ($user) {
-            $this->Auth->setUser($user);
-            $usuario = [
-                'success' => true,
-                'data' => [
-                    'token' => JWT::encode([
-                        'sub' => $user['id'],
-                        'exp' => time() + 604800
-                    ], Security::getSalt()),
-                ],
-                'userInfo' => ['username' => $user['username'], 'name' => $user['name']],
-                'message' => 'OK'
-            ];
-            $this->set('usuario', $usuario);
-            $this->set('_serialize', 'usuario');
-        } else {
-            $this->set(['message' => 'Usuário ou senha inválidos', '_serialize' => 'message']);
+        if ($this->request->is('options')) {
+            return $this->response->withType('application/json');
         }
+        $response = new Response();
+        $result = $this->Authentication->getResult();
+        $cookie = new Cookie('JwtCookie', '');
+        if ($result->isValid()) {
+            $privateKey = file_get_contents(CONFIG . 'jwt.key');
+            $user = $result->getData();
+            $payload = [
+                'iss' => 'myapp',
+                'sub' => $user->id,
+                'exp' => time() + 60,
+            ];
+            $json = [
+                'token' => JWT::encode($payload, $privateKey, 'RS256'),
+            ];
+            $status = 200;
+            $cookie = new Cookie('JwtCookie', $json['token'], null, null, null, false, true, null);
+        } else {
+            $status = 401;
+            $json = ['mensagem' => 'Não autorizado'];
+        }
+
+        return $response->withType('application/json')
+            ->withStringBody(json_encode($json))
+            ->withStatus($status)
+            ->withCookie($cookie);
     }
-    
+
     public function logout()
     {
-        $this->Auth->logout();
+        $result = $this->Authentication->getResult();
+        if ($result->isValid()) {
+            $this->Authentication->logout();
+            $response = new Response();
+
+            return $response->withType('application/json')->withStringBody(json_encode(['mensagem' => 'sucesso']));
+        }
     }
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Model\Table;
 
 use Cake\ORM\Query;
@@ -26,7 +29,7 @@ class UsersTable extends Table
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -41,30 +44,30 @@ class UsersTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator)
+    public function validationDefault(Validator $validator): \Cake\Validation\Validator
     {
         $validator
             ->integer('id')
-            ->allowEmpty('id', 'create');
+            ->allowEmptyString('id', 'create');
 
         $validator
             ->scalar('username')
             ->maxLength('username', 100)
             ->requirePresence('username', 'create')
-            ->notEmpty('username')
+            ->notEmptyString('username')
             ->add('username', 'unique', ['rule' => 'validateUnique', 'provider' => 'table']);
 
         $validator
             ->scalar('password')
             ->maxLength('password', 250)
             ->requirePresence('password', 'create')
-            ->notEmpty('password');
+            ->notEmptyString('password');
 
         $validator
             ->scalar('name')
             ->maxLength('name', 40)
             ->requirePresence('name', 'create')
-            ->notEmpty('name');
+            ->notEmptyString('name');
 
         return $validator;
     }
@@ -76,7 +79,7 @@ class UsersTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules)
+    public function buildRules(RulesChecker $rules): \Cake\ORM\RulesChecker
     {
         $rules->add($rules->isUnique(['username']));
 

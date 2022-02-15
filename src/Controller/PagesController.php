@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /**
  * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
@@ -12,11 +14,13 @@
  * @since     0.2.9
  * @license   https://opensource.org/licenses/mit-license.php MIT License
  */
+
 namespace App\Controller;
 
 use Cake\Core\Configure;
-use Cake\Network\Exception\ForbiddenException;
-use Cake\Network\Exception\NotFoundException;
+use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
 use Cake\View\Exception\MissingTemplateException;
 
 /**
@@ -32,16 +36,18 @@ class PagesController extends AppController
     /**
      * Displays a view
      *
-     * @param array ...$path Path segments.
+     * @param string ...$path Path segments.
      * @return \Cake\Http\Response|null
-     * @throws \Cake\Network\Exception\ForbiddenException When a directory traversal attempt.
-     * @throws \Cake\Network\Exception\NotFoundException When the view file could not
-     *   be found or \Cake\View\Exception\MissingTemplateException in debug mode.
+     * @throws \Cake\Http\Exception\ForbiddenException When a directory traversal attempt.
+     * @throws \Cake\View\Exception\MissingTemplateException When the view file could not
+     *   be found and in debug mode.
+     * @throws \Cake\Http\Exception\NotFoundException When the view file could not
+     *   be found and not in debug mode.
+     * @throws \Cake\View\Exception\MissingTemplateException In debug mode.
      */
     public function display(...$path)
     {
-        $count = count($path);
-        if (!$count) {
+        if (!$path) {
             return $this->redirect('/');
         }
         if (in_array('..', $path, true) || in_array('.', $path, true)) {
@@ -58,7 +64,7 @@ class PagesController extends AppController
         $this->set(compact('page', 'subpage'));
 
         try {
-            $this->render(implode('/', $path));
+            return $this->render(implode('/', $path));
         } catch (MissingTemplateException $exception) {
             if (Configure::read('debug')) {
                 throw $exception;

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Controller\AppController;
@@ -64,7 +67,7 @@ class TasksController extends AppController
             if ($this->Tasks->save($task)) {
                 $message = 'success';
             } else {
-                $message = $task->errors();
+                $message = $task->getErrors();
             }
             $this->set(compact('message'));
             $this->set('_serialize', 'message');
@@ -91,7 +94,7 @@ class TasksController extends AppController
             if ($this->Tasks->save($task)) {
                 $message = 'success';
             } else {
-                $message = $task->errors();
+                $message = $task->getErrors();
             }
             $this->set(compact('message'));
             $this->set('_serialize', 'message');
@@ -115,7 +118,7 @@ class TasksController extends AppController
         if ($this->Tasks->delete($task)) {
             $message = 'success';
         } else {
-            $message = $task->errors();
+            $message = $task->getErrors();
         }
         $this->set(compact('message'));
         $this->set('_serialize', 'message');

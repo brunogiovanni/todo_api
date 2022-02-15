@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Model\Table;
 
 use Cake\ORM\Query;
@@ -28,7 +31,7 @@ class TasksTable extends Table
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config)
+    public function initialize(array $config): void
     {
         parent::initialize($config);
 
@@ -48,23 +51,23 @@ class TasksTable extends Table
      * @param \Cake\Validation\Validator $validator Validator instance.
      * @return \Cake\Validation\Validator
      */
-    public function validationDefault(Validator $validator)
+    public function validationDefault(Validator $validator): \Cake\Validation\Validator
     {
         $validator
             ->integer('id')
-            ->allowEmpty('id', 'create');
+            ->allowEmptyString('id', 'create');
 
         $validator
             ->scalar('task')
             ->maxLength('task', 150)
             ->requirePresence('task', 'create')
-            ->notEmpty('task');
+            ->notEmptyString('task');
 
         $validator
             ->scalar('status')
             ->maxLength('status', 1)
             ->requirePresence('status', 'create')
-            ->notEmpty('status');
+            ->notEmptyString('status');
 
         return $validator;
     }
@@ -76,7 +79,7 @@ class TasksTable extends Table
      * @param \Cake\ORM\RulesChecker $rules The rules object to be modified.
      * @return \Cake\ORM\RulesChecker
      */
-    public function buildRules(RulesChecker $rules)
+    public function buildRules(RulesChecker $rules): \Cake\ORM\RulesChecker
     {
         $rules->add($rules->existsIn(['users_id'], 'Users'));
 
