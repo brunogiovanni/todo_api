@@ -13,7 +13,6 @@ use Firebase\JWT\JWT;
  * Users Controller
  *
  * @property \App\Model\Table\UsersTable $Users
- * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
  *
  * @method \App\Model\Entity\User[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
@@ -64,7 +63,7 @@ class UsersController extends AppController
      */
     public function add()
     {
-        $user = $this->Users->newEntity();
+        $user = $this->Users->newEmptyEntity();
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->getData());
             if ($this->Users->save($user)) {
@@ -150,7 +149,7 @@ class UsersController extends AppController
             $cookie = new Cookie('JwtCookie', $json['token'], null, null, null, false, true, null);
         } else {
             $status = 401;
-            $json = ['mensagem' => 'Não autorizado'];
+            $json = ['mensagem' => 'Usuário ou senha incorretos '];
         }
 
         return $response->withType('application/json')

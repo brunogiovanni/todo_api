@@ -1,0 +1,22 @@
+version: '3'
+services:
+  web:
+    image: brunogiovanni/cakephp:4.3
+    volumes:
+      - .:/var/www/html
+      - ~/.ssh:/root/.ssh
+    ports:
+      - "80:80"
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: todo
+      MYSQL_ROOT_PASSWORD: todo123
+    ports:
+      - "3306:3306"
+  myadmin:
+    image: phpmyadmin
+    environment:
+      PMA_HOST: db
+    ports:
+      - "8080:80"

@@ -19,6 +19,7 @@ namespace App\Controller;
 
 use Cake\Controller\Controller;
 use Cake\Event\Event;
+use Cake\Event\EventInterface;
 
 /**
  * Application Controller
@@ -27,6 +28,8 @@ use Cake\Event\Event;
  * will inherit them.
  *
  * @link https://book.cakephp.org/3.0/en/controllers.html#the-app-controller
+ *
+ * @property \Authentication\Controller\Component\AuthenticationComponent $Authentication
  */
 class AppController extends Controller
 {
@@ -47,27 +50,6 @@ class AppController extends Controller
         $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
 
-        // $this->loadComponent('Auth', [
-        //     'storage' => 'Memory',
-        //     'authenticate' => [
-        //         'Form',
-        //         'ADmad/JwtAuth.Jwt' => [
-        //             'parameter' => 'token',
-        //             'userModel' => 'Users',
-        //             'fields' => [
-        //                 'username' => 'id'
-        //             ],
-        //             'queryDatasource' => true
-        //         ]
-        //     ],
-        //     'loginAction' => [
-        //         'controller' => 'Users',
-        //         'action' => 'login'
-        //     ],
-        //     'unauthorizedRedirect' => false,
-        //     'checkAuthIn' => 'Controller.initialize'
-        // ]);
-        // $this->Auth->allow(['home', 'display']);
         $this->loadComponent('Authentication.Authentication');
 
         /*
@@ -76,5 +58,15 @@ class AppController extends Controller
          */
         //$this->loadComponent('Security');
         //$this->loadComponent('Csrf');
+    }
+
+    public function beforeFilter(EventInterface $event)
+    {
+        parent::beforeFilter($event);
+
+        $user = $this->Authentication->getIdentity();
+        if ($user?->id) {
+            $this->set('userlogged', $user);
+        }
     }
 }

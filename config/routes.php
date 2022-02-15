@@ -19,6 +19,7 @@
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
 
+use Cake\Http\Middleware\EncryptedCookieMiddleware;
 use Cake\Routing\RouteBuilder;
 use Cake\Routing\Route\DashedRoute;
 
@@ -41,20 +42,29 @@ return static function (RouteBuilder $routes) {
      * `:action` markers.
      *
      */
-    $routes->setRouteClass(DashedRoute::class);
+    $routes->setRouteClass(DashedRoute::class); 
+
+    $routes->scope('/', function (RouteBuilder $builder) {
+        $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
+        $builder->connect('/pages/*', ['controller' => 'Pages::display']);
+
+        $builder->fallbacks();
+    });
 
     $routes->scope('/api', function (RouteBuilder $builder) {
-        $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
         $builder->setExtensions(['json']);
+        // $builder->applyMiddleware('cookies');
 
         //Users
+        // $builder->resources('Users');
         $builder->get('/user/*', ['controller' => 'Users', 'action' => 'view', '_ext' => 'json']);
         $builder->post('/user', ['controller' => 'Users', 'action' => 'add', '_ext' => 'json']);
         $builder->put('/user/*', ['controller' => 'Users', 'action' => 'edit', '_ext' => 'json']);
-        $builder->get('/logout', ['controller' => 'Users', 'action' => 'logout', '_ext' => 'json']);
-        $builder->connect('/login', ['controller' => 'Users', 'action' => 'login', '_ext' => 'json']);
-
+        $builder->connect('/logout', ['controller' => 'Users', 'action' => 'logout']);
+        $builder->connect('/login', ['controller' => 'Users', 'action' => 'login']);
+        
         //Tasks
+        // $builder->resources('Tasks', ['_ext' => 'json']);
         $builder->get('/tasks', ['controller' => 'Tasks', 'action' => 'index', '_ext' => 'json']);
         $builder->get('/task/*', ['controller' => 'Tasks', 'action' => 'view', '_ext' => 'json']);
         $builder->post('/task', ['controller' => 'Tasks', 'action' => 'add', '_ext' => 'json']);

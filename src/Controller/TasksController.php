@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Authentication\IdentityInterface;
+use Cake\Event\EventInterface;
 
 /**
  * Tasks Controller
@@ -15,6 +17,14 @@ use App\Controller\AppController;
  */
 class TasksController extends AppController
 {
+    private IdentityInterface $user;
+
+    public function beforeFilter(EventInterface $event)
+    {
+        parent::beforeFilter($event);
+
+        $this->user = $this->Authentication->getIdentity();
+    }
 
     /**
      * Index method
@@ -25,7 +35,7 @@ class TasksController extends AppController
     {
         $this->paginate = [
             'contain' => ['Users'],
-            'conditions' => ['status' => 'O', 'users_id' => $this->Auth->user('id')]
+            'conditions' => ['status' => 'O', 'users_id' => $this->user['id']]
         ];
         $tasks = $this->paginate($this->Tasks);
 
@@ -44,7 +54,7 @@ class TasksController extends AppController
     {
         $task = $this->Tasks->get($id, [
             'contain' => ['Users'],
-            'conditions' => ['status' => 'O', 'users_id' => $this->Auth->user('id')]
+            'conditions' => ['status' => 'O', 'users_id' => $this->user['id']]
         ]);
 
         $this->set('task', $task);
@@ -58,11 +68,11 @@ class TasksController extends AppController
      */
     public function add()
     {
-        $task = $this->Tasks->newEntity();
+        $task = $this->Tasks->newEmptyEntity();
         if ($this->request->is('post')) {
             $data = $this->request->getData();
             $data['status'] = 'O';
-            $data['users_id'] = $this->Auth->user('id');
+            $data['users_id'] = $this->user['id'];
             $task = $this->Tasks->patchEntity($task, $data);
             if ($this->Tasks->save($task)) {
                 $message = 'success';
@@ -87,7 +97,7 @@ class TasksController extends AppController
     public function edit($id = null)
     {
         $task = $this->Tasks->get($id, [
-            'conditions' => ['status' => 'O', 'users_id' => $this->Auth->user('id')]
+            'conditions' => ['status' => 'O', 'users_id' => $this->user['id']]
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $task = $this->Tasks->patchEntity($task, $this->request->getData());
